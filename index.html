@@ -1,105 +1,36 @@
-// pages/index.tsx
-import { useRef, useState } from 'react';
-import Tesseract from 'tesseract.js';
-import dynamic from 'next/dynamic';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwriting Beautifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
 
-const fonts = [
-  'Bradley Hand', 'Felt Tip Roman', 'Kristen Normal', 'Julietrose', 'Swordtail', 'Zemke Hand'
-];
+    <div class="flex items-center justify-center min-h-screen p-5">
+        <div class="w-full max-w-4xl bg-white p-8 rounded-lg shadow-xl">
+            <h1 class="text-3xl font-semibold text-center mb-6">Live Handwriting Beautifier</h1>
 
-export default function Home() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [text, setText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedFont, setSelectedFont] = useState(fonts[0]);
-
-  const handleClear = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setText('');
-  };
-
-  const handleOCR = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    setIsLoading(true);
-    const dataUrl = canvas.toDataURL('image/png');
-    const result = await Tesseract.recognize(dataUrl, 'eng');
-    setText(result.data.text);
-    setIsLoading(false);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-4xl font-bold text-center mb-4">🖊️ Inkflare</h1>
-      <p className="text-center text-gray-600 mb-4">Write freely, beautify instantly.</p>
-
-      <div className="flex flex-col items-center">
-        <canvas
-          ref={canvasRef}
-          width={500}
-          height={300}
-          className="border-2 border-gray-400 rounded-md bg-white mb-4 cursor-crosshair"
-          onMouseDown={(e) => {
-            const canvas = canvasRef.current;
-            const ctx = canvas?.getContext('2d');
-            if (!canvas || !ctx) return;
-            const rect = canvas.getBoundingClientRect();
-
-            let drawing = true;
-            const draw = (x: number, y: number) => {
-              ctx.lineTo(x, y);
-              ctx.stroke();
-            };
-
-            ctx.beginPath();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-
-            const moveHandler = (moveEvent: MouseEvent) => {
-              if (!drawing) return;
-              draw(moveEvent.clientX - rect.left, moveEvent.clientY - rect.top);
-            };
-
-            const upHandler = () => {
-              drawing = false;
-              window.removeEventListener('mousemove', moveHandler);
-              window.removeEventListener('mouseup', upHandler);
-            };
-
-            window.addEventListener('mousemove', moveHandler);
-            window.addEventListener('mouseup', upHandler);
-          }}
-        />
-
-        <div className="flex gap-4 mb-4">
-          <button onClick={handleOCR} className="bg-blue-600 text-white px-4 py-2 rounded shadow">
-            {isLoading ? 'Processing...' : 'Beautify'}
-          </button>
-          <button onClick={handleClear} className="bg-gray-400 text-white px-4 py-2 rounded">
-            Clear
-          </button>
-          <select
-            value={selectedFont}
-            onChange={(e) => setSelectedFont(e.target.value)}
-            className="border px-2 py-1 rounded"
-          >
-            {fonts.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </select>
+            <!-- Handwriting Canvas Section -->
+            <div class="flex justify-between">
+                <div class="w-2/3 border border-gray-300 rounded-lg">
+                    <canvas id="handwritingCanvas" width="600" height="400" class="w-full h-full"></canvas>
+                </div>
+                <div class="w-1/3 pl-5">
+                    <h2 class="text-xl font-medium">Beautified Text</h2>
+                    <div id="beautifiedText" class="bg-gray-100 p-4 rounded-lg shadow-inner h-full overflow-auto mt-4 text-lg text-gray-700"></div>
+                </div>
+            </div>
         </div>
-
-        {text && (
-          <div
-            className="p-4 bg-white rounded-md shadow w-full max-w-xl text-xl text-gray-900 text-justify"
-            style={{ fontFamily: selectedFont }}
-          >
-            {text}
-          </div>
-        )}
-      </div>
     </div>
-  );
-}
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.0/dist/tesseract.min.js"></script>
+    <script src="main.js"></script>
+
+    <button onclick="clearCanvas()" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+      Clear Canvas
+  </button>
+  
+</body>
+</html>
